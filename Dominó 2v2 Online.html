@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dominó 2v2 Online</title>
+<style>
+:root{--bg:#f6f1e7;--card:#fffaf0;--ink:#1d2a24;--muted:#5d6b63;--accent:#1f7a4d;--accent-ink:#fff;--tile:#fdfcf7;--pip:#1d2a24;--line:#e2d9c5;--felt:#14573a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1612;--card:#16221b;--ink:#eef3ee;--muted:#9fb1a5;--accent:#3ecf8e;--accent-ink:#06210f;--tile:#f3efe3;--pip:#1a1f1c;--line:#26362c;--felt:#0f3f2a}}
+:root[data-theme="dark"]{--bg:#0e1612;--card:#16221b;--ink:#eef3ee;--muted:#9fb1a5;--accent:#3ecf8e;--accent-ink:#06210f;--tile:#f3efe3;--pip:#1a1f1c;--line:#26362c;--felt:#0f3f2a}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+.logo{font-weight:800;font-size:1.1rem;letter-spacing:-.02em}
+.btn{display:inline-block;background:var(--accent);color:var(--accent-ink);padding:13px 24px;border-radius:12px;font-weight:700;text-decoration:none;border:0;font-size:1rem}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.hero{display:grid;gap:28px;padding:28px 0 48px;align-items:center}
+@media(min-width:760px){.hero{grid-template-columns:1.1fr .9fr}}
+h1{font-size:clamp(2rem,6vw,3.2rem);line-height:1.08;margin:0 0 14px;letter-spacing:-.03em}
+.sub{color:var(--muted);font-size:1.1rem;margin:0 0 24px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.table{background:var(--felt);border-radius:22px;padding:22px 16px;display:grid;gap:14px;justify-items:center;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.seat{color:#d9efe3;font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.tile{display:flex;background:var(--tile);border-radius:8px;box-shadow:0 2px 0 rgba(0,0,0,.25);overflow:hidden}
+.tile.v{flex-direction:column}
+.half{width:34px;height:34px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:5px;gap:1px}
+.half+.half{border-left:2px solid var(--line)}
+.tile.v .half+.half{border-left:0;border-top:2px solid var(--line)}
+.pip{width:100%;height:100%;border-radius:50%;background:var(--pip);transform:scale(.7)}
+section{padding:40px 0;border-top:1px solid var(--line)}
+h2{font-size:1.6rem;margin:0 0 20px;letter-spacing:-.02em}
+.grid{display:grid;gap:14px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.card h3{margin:0 0 6px;font-size:1.05rem}
+.card p{margin:0;color:var(--muted)}
+.num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:800;margin-bottom:10px}
+ol.rules{padding-left:20px;margin:0}
+ol.rules li{margin-bottom:10px}
+footer{padding:32px 0 40px;color:var(--muted);text-align:center;font-size:.9rem}
+
+[hidden]{display:none!important}
+button.btn{cursor:pointer;font-family:inherit}
+.grid2{display:grid;gap:14px}
+@media(min-width:640px){.grid2{grid-template-columns:1fr 1fr}}
+input#codigo{width:100%;padding:12px 14px;margin:0 0 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:700 1.2rem system-ui,sans-serif;letter-spacing:.3em;text-transform:uppercase;text-align:center}
+.rhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.lbl{color:var(--muted);font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.code{font:800 2rem ui-monospace,Menlo,monospace;letter-spacing:.18em}
+.team{margin:14px 0 6px;font-weight:800}
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.slot{border:1.5px dashed var(--line);border-radius:12px;padding:14px;min-height:64px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);background:transparent;font:inherit;word-break:break-word}
+button.slot{cursor:pointer}
+.slot.on{border-style:solid;border-color:var(--accent);color:var(--ink);font-weight:700;background:var(--bg)}
+.slot.me{background:var(--accent);color:var(--accent-ink)}
+#lmsg{min-height:1.4em;margin:14px 0 0;color:var(--muted)}
+#lmsg.err{color:#c0392b}
+.namerow{display:flex;gap:10px;flex-wrap:wrap}
+input#nome{flex:1;min-width:160px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:600 1rem system-ui,sans-serif}
+.mesa{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-content:flex-start;background:var(--felt);border-radius:16px;padding:14px;min-height:96px}
+.mao{display:flex;flex-wrap:wrap;gap:8px}
+.peca{border:2px solid transparent;border-radius:10px;padding:2px;background:transparent;cursor:pointer}
+.peca.ok{border-color:var(--accent)}
+.peca.off{opacity:.35;cursor:default}
+.half{width:var(--u,34px);height:var(--u,34px);padding:calc(var(--u,34px)*.14)}
+.tile{border-radius:calc(var(--u,34px)*.22)}
+.half+.half{border-left:1px solid #b8b09a}
+.tile.v .half+.half{border-left:0;border-top:1px solid #b8b09a}
+.felt{background:radial-gradient(ellipse at 50% 40%,#1f8a58,var(--felt) 78%);border-radius:18px;padding:14px 10px;display:grid;gap:14px}
+.opps{display:flex;justify-content:space-around;align-items:flex-start;gap:6px}
+.opp{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:0}
+.opp .lbl{color:#bfe3cf;font-size:.65rem}
+.backs{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;min-height:20px}
+.back{width:10px;height:20px;background:#f4f1e6;border-radius:2px;box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.pill{background:#5a3a1c;color:#fff;border:2px solid #3b2410;border-radius:999px;padding:4px 12px;font-weight:800;font-size:.8rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill.vez{border-color:#ffd24a;box-shadow:0 0 0 3px rgba(255,210,74,.45)}
+.mesa{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;align-items:center;align-content:center;background:transparent;border-radius:0;padding:6px 0;min-height:90px}
+.mesa .tile{box-shadow:0 2px 3px rgba(0,0,0,.35)}
+.minha{display:flex;flex-direction:column;align-items:center;gap:10px}
+.mao{--u:30px;justify-content:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><div class="logo">🁣 Dominó 2v2</div><a class="btn" href="#lobby">Jogar</a></nav>
+
+  <header class="hero">
+    <div>
+      <h1>Dominó em duplas, direto no navegador.</h1>
+      <p class="sub">Quatro jogadores, duas duplas, uma mesa. Sem instalar nada: chame seu parceiro e os adversários e bora bater.</p>
+      <div class="cta">
+        <a class="btn" href="#lobby">Jogar agora</a>
+        <a class="btn ghost" href="#como">Como funciona</a>
+      </div>
+    </div>
+    <div class="table" aria-hidden="true">
+      <div class="seat">Dupla B</div>
+      <div class="row" id="top"></div>
+      <div class="row" id="mid"></div>
+      <div class="row" id="bot"></div>
+      <div class="seat">Sua dupla</div>
+    </div>
+  </header>
+
+  <section id="lobby">
+    <h2>Sala de jogo</h2>
+    <div class="card" style="margin-bottom:14px"><h3 style="margin-bottom:10px">Seu nome</h3><div class="namerow"><input id="nome" maxlength="16" placeholder="Como quer ser chamado?" autocomplete="nickname"><button class="btn ghost" id="bNome" type="button" hidden>Salvar nome</button></div></div>
+    <div id="vLobby" class="grid2">
+      <div class="card"><h3>Criar sala</h3><p style="margin-bottom:14px">Gere um código e chame os outros três jogadores.</p><button class="btn" id="bCriar" type="button">Criar sala</button></div>
+      <div class="card"><h3>Entrar numa sala</h3><p style="margin-bottom:14px">Digite o código de 5 caracteres.</p><input id="codigo" maxlength="5" placeholder="ABCDE" autocomplete="off" autocapitalize="characters" inputmode="text"><button class="btn" id="bEntrar" type="button">Entrar</button></div>
+    </div>
+    <div id="vSala" class="card" hidden>
+      <div class="rhead">
+        <div><div class="lbl">Código da sala</div><div class="code" id="rcode"></div></div>
+        <button class="btn ghost" id="bCopiar" type="button">Copiar código</button>
+      </div>
+      <div class="team">Dupla A</div><div class="slots" id="tA"></div>
+      <div class="team">Dupla B</div><div class="slots" id="tB"></div>
+      <p id="rstatus" style="color:var(--muted)"></p>
+      <div class="cta"><button class="btn" id="bIniciar" type="button" hidden>Iniciar partida</button><button class="btn ghost" id="bBot" type="button" hidden>Adicionar bot</button><button class="btn ghost" id="bBots" type="button" hidden>Completar com bots</button><button class="btn ghost" id="bSair" type="button">Sair da sala</button></div>
+    </div>
+    <div id="vJogo" class="card" hidden style="margin-top:14px">
+      <div class="lbl" id="jRodada"></div>
+      <div id="jPlacar" style="font-weight:800;font-size:1.25rem;margin-bottom:8px"></div>
+      <p id="jVez" style="font-weight:700;margin:0 0 2px"></p>
+      <p id="jUlt" style="color:var(--muted);margin:0 0 12px;font-size:.9rem;min-height:1.3em"></p>
+      <div class="felt">
+        <div id="jOpp" class="opps"></div>
+        <div id="jMesa" class="mesa"></div>
+        <div class="minha"><div id="jMao" class="mao"></div><div id="jEu"></div></div>
+      </div>
+      <div id="jLados" class="cta" style="margin-top:12px" hidden></div>
+      <label id="velWrap" style="display:flex;align-items:center;gap:8px;margin-top:12px;color:var(--muted);font-size:.9rem" hidden>Velocidade dos bots <select id="velBot" style="padding:8px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit"><option value="4000">Lenta</option><option value="2500" selected>Normal</option><option value="1200">Rápida</option></select></label>
+      <div class="cta" style="margin-top:12px"><button class="btn" id="bPassar" type="button" hidden>Passar a vez</button><button class="btn" id="bNova" type="button" hidden>Nova rodada</button></div>
+    </div>
+    <p id="lmsg" role="status"></p>
+  </section>
+
+  <section id="como">
+    <h2>Como funciona</h2>
+    <div class="grid">
+      <div class="card"><div class="num">1</div><h3>Crie ou entre numa sala</h3><p>Compartilhe o link com os amigos e escolha seu lugar na mesa.</p></div>
+      <div class="card"><div class="num">2</div><h3>Forme sua dupla</h3><p>Você senta de frente para o parceiro. Os pontos são somados em conjunto.</p></div>
+      <div class="card"><div class="num">3</div><h3>Jogue e converse</h3><p>Partida em tempo real, na vez de cada um, até a dupla atingir a pontuação.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Regras básicas</h2>
+    <ol class="rules">
+      <li>Cada jogador recebe 6 peças e 4 ficam de fora (o "dorme").</li>
+      <li>Quem tem a maior carroça começa; o jogo segue em sentido horário.</li>
+      <li>Sem peça para jogar, você passa a vez.</li>
+      <li>Bater vale 1 ponto (2 se for com carroça). No jogo trancado, a dupla com menos pontos na mão faz 1. Vence quem chegar a 6 pontos.</li>
+    </ol>
+  </section>
+
+  <footer>Feito com carinho para quem não perde uma rodada.</footer>
+</div>
+
+<script>
+function half(n){
+  var map={0:[],1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]}[n];
+  var h=document.createElement('div');h.className='half';
+  for(var i=0;i<9;i++){var c=document.createElement('div');if(map.indexOf(i)>-1){var p=document.createElement('div');p.className='pip';c.style.display='contents';c.appendChild(p);}h.appendChild(c);}
+  return h;
+}
+function tile(a,b,v){
+  var t=document.createElement('div');t.className='tile'+(v?' v':'');
+  t.appendChild(half(a));t.appendChild(half(b));return t;
+}
+function fill(id,list,v){var el=document.getElementById(id);list.forEach(function(p){el.appendChild(tile(p[0],p[1],v));});}
+fill('top',[[6,6],[3,5],[2,4]],true);
+fill('mid',[[4,6],[6,1],[1,3],[3,3],[3,0]],false);
+fill('bot',[[5,5],[0,2],[1,4]],true);
+</script>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+var ALFA='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+var st={game:null,escolha:null,bt:null,names:{},bots:{},db:null,user:null,uid:null,code:null,unsubs:[],seats:{},room:null};
+
+function msg(t,err){var m=$('lmsg');m.textContent=t||'';m.className=err?'err':'';}
+function erro(e){
+  if(e&&e.code==='invalid_argument')return 'Sem permissão para jogar aqui: peça ao dono da página acesso de colaborador.';
+  if(e&&e.code==='resource_exhausted')return 'Muitas ações seguidas. Aguarde um instante.';
+  return 'Algo deu errado ('+((e&&e.code)||'erro')+'). Tente de novo.';
+}
+function limpar(c){return (c||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);}
+function gerarCodigo(){var s='';for(var i=0;i<5;i++)s+=ALFA[Math.floor(Math.random()*ALFA.length)];return s;}
+function pronto(){if(!st.db||!st.uid){msg('Salas online precisam da versão publicada e de uma conta conectada.',true);return false;}return true;}
+function meuAssento(){for(var i=0;i<4;i++){if(st.seats[i]===st.uid)return i;}return null;}
+
+async function criarSala(){
+  if(!pronto())return;
+  if(!nome())return pedirNome();
+  msg('Criando sala...');
+  try{
+    for(var i=0;i<5;i++){
+      var code=gerarCodigo();
+      var ref=st.db.doc('rooms/'+code);
+      var snap=await ref.get();
+      if(snap.exists)continue;
+      await ref.set({code:code,hostId:st.uid,status:'aguardando',createdAt:Date.now()});
+      return await entrarSala(code);
+    }
+    msg('Não consegui gerar um código. Tente de novo.',true);
+  }catch(e){msg(erro(e),true);}
+}
+
+async function entrarSala(code){
+  code=limpar(code);
+  if(code.length!==5)return msg('O código tem 5 caracteres.',true);
+  if(!pronto())return;
+  if(!nome())return pedirNome();
+  msg('Entrando...');
+  try{
+    var room=await st.db.doc('rooms/'+code).get();
+    if(!room.exists)return msg('Sala não encontrada. Confira o código.',true);
+    var snap=await st.db.collection('rooms/'+code+'/seats').get();
+    var taken={},mine=false;
+    snap.docs.forEach(function(d){taken[d.id]=d.data().uid;if(d.data().uid===st.uid)mine=true;});
+    if(!mine){
+      var free=[0,1,2,3].filter(function(i){return !taken[i];});
+      if(!free.length)return msg('Essa sala está cheia.',true);
+      var sref=st.db.doc('rooms/'+code+'/seats/'+free[0]);
+      await sref.set({uid:st.uid,name:nome(),at:Date.now()});
+      var chk=await sref.get();
+      if(!chk.exists||chk.data().uid!==st.uid)return msg('Alguém pegou esse lugar primeiro. Tente de novo.',true);
+    }
+    abrirSala(code);
+  }catch(e){msg(erro(e),true);}
+}
+
+async function sentar(i){
+  if(!st.code||st.seats[i])return;
+  try{
+    var atual=meuAssento();
+    var sref=st.db.doc('rooms/'+st.code+'/seats/'+i);
+    await sref.set({uid:st.uid,name:nome(),at:Date.now()});
+    var chk=await sref.get();
+    if(!chk.exists||chk.data().uid!==st.uid)return msg('Alguém pegou esse lugar primeiro.',true);
+    if(atual!==null&&atual!==i)await st.db.doc('rooms/'+st.code+'/seats/'+atual).delete();
+    msg('');
+  }catch(e){msg(erro(e),true);}
+}
+
+async function sair(){
+  var code=st.code,i=meuAssento();
+  fechar();
+  if(code&&i!==null){try{await st.db.doc('rooms/'+code+'/seats/'+i).delete();}catch(e){}}
+}
+function fechar(){
+  st.unsubs.forEach(function(u){try{u();}catch(e){}});
+  st.unsubs=[];st.code=null;st.seats={};st.names={};st.bots={};st.room=null;st.game=null;st.escolha=null;clearTimeout(st.bt);$("vJogo").hidden=true;
+  $('vSala').hidden=true;$('vLobby').hidden=false;$('bNome').hidden=true;msg('');
+}
+
+function abrirSala(code){
+  fechar();
+  st.code=code;
+  $('rcode').textContent=code;
+  $('vLobby').hidden=true;$('vSala').hidden=false;$('bNome').hidden=false;msg('');
+  st.unsubs.push(st.db.doc('rooms/'+code).onSnapshot(function(s){st.room=s.exists?s.data():null;render();},function(){}));
+  st.unsubs.push(st.db.collection('rooms/'+code+'/seats').onSnapshot(function(q){
+    var m={},n={},b={};q.docs.forEach(function(d){m[d.id]=d.data().uid;n[d.id]=d.data().name||'';b[d.id]=!!d.data().bot;});
+    st.seats=m;st.names=n;st.bots=b;render();
+  },function(){}));
+  st.unsubs.push(st.db.doc('rooms/'+code+'/game/state').onSnapshot(function(sn){
+    var g=null;
+    if(sn.exists){
+      g=JSON.parse(JSON.stringify(sn.data()));
+      g.board=g.board||[];g.hands=g.hands||{};
+      for(var k=0;k<4;k++)g.hands[k]=g.hands[k]||[];
+    }
+    st.game=g;st.escolha=null;renderJogo();agendarBot();
+  },function(){}));
+}
+
+async function render(){
+  if(!st.code)return;
+  var ids=[];for(var i=0;i<4;i++){if(st.seats[i]&&!st.bots[i])ids.push(st.seats[i]);}
+  var perfis={};
+  try{if(st.user&&ids.length)perfis=await st.user.profiles(ids);}catch(e){}
+  if(!st.code)return;
+  [[ 'tA',[0,2] ],[ 'tB',[1,3] ]].forEach(function(t){
+    var box=$(t[0]);box.textContent='';
+    t[1].forEach(function(i){
+      var u=st.seats[i],el;
+      if(u&&st.bots[i]){
+        var souHost=st.room&&st.room.hostId===st.uid;
+        el=document.createElement(souHost?'button':'div');
+        if(souHost){el.type='button';el.title='Remover bot';el.addEventListener('click',function(){removerBot(i);});}
+        el.className='slot on';
+        el.textContent='\uD83E\uDD16 '+(st.names[i]||'Bot')+(souHost?' \u2715':'');
+      }else if(u){
+        el=document.createElement('div');
+        el.className='slot on'+(u===st.uid?' me':'');
+        el.textContent=(st.names[i]||(perfis[u]&&perfis[u].name)||'Jogador')+(u===st.uid?' (você)':'');
+      }else{
+        el=document.createElement('button');el.type='button';el.className='slot';
+        el.textContent='Lugar livre';
+        el.addEventListener('click',function(){sentar(i);});
+      }
+      box.appendChild(el);
+    });
+  });
+  var n=[0,1,2,3].filter(function(k){return st.seats[k];}).length,host=st.room&&st.room.hostId===st.uid,status=st.room&&st.room.status;
+  var txt=n<4?('Aguardando jogadores ('+n+'/4). Toque em um lugar livre para trocar de lugar.'):'Mesa completa!';
+  if(status==='jogando')txt='Partida em andamento.';
+  $('rstatus').textContent=txt;
+  $('bIniciar').hidden=!(host&&n===4&&status!=='jogando');
+  $('bBot').hidden=!(host&&n<4);
+  $('bBots').hidden=!(host&&n<3);
+  renderJogo();agendarBot();
+}
+
+async function iniciar(){
+  if(!souHostAgora())return;
+  try{
+    await st.db.doc('rooms/'+st.code+'/game/state').set(novaRodada({A:0,B:0},1));
+    await st.db.doc('rooms/'+st.code).update({status:'jogando'});
+  }catch(e){msg(erro(e),true);}
+}
+async function copiar(){
+  try{await navigator.clipboard.writeText(st.code);msg('Código copiado.');}
+  catch(e){msg('Copie manualmente: '+st.code);}
+}
+
+var PONTOS_ALVO=6;
+function L(n){return Math.floor(n/10);}
+function R(n){return n%10;}
+function mk(a,b){return a*10+b;}
+function nm(i){return st.names[i]||'Jogador';}
+function copia(g){return JSON.parse(JSON.stringify(g));}
+function baralho(){
+  var t=[];
+  for(var a=0;a<=6;a++)for(var b=a;b<=6;b++)t.push(mk(a,b));
+  for(var i=t.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var x=t[i];t[i]=t[j];t[j]=x;}
+  return t;
+}
+function novaRodada(score,round){
+  var t=baralho(),hands={},best=null,bs=-1;
+  for(var s=0;s<4;s++){
+    hands[s]=t.slice(s*6,s*6+6);
+    hands[s].forEach(function(n,i){
+      var v=(L(n)===R(n)?100:0)+L(n)+R(n);
+      if(v>bs){bs=v;best={seat:s,tile:n};}
+    });
+  }
+  return {round:round,hands:hands,board:[],turn:best.seat,starterTile:best.tile,passes:0,score:score,over:false,roundOver:false,msg:''};
+}
+function jogadas(g,seat){
+  var h=g.hands[seat],out=[];
+  if(!g.board.length){
+    h.forEach(function(n,i){if(n===g.starterTile&&seat===g.turn)out.push({i:i,side:'L'});});
+    return out;
+  }
+  var l=L(g.board[0]),r=R(g.board[g.board.length-1]);
+  h.forEach(function(n,i){
+    if(L(n)===l||R(n)===l)out.push({i:i,side:'L'});
+    if(L(n)===r||R(n)===r)out.push({i:i,side:'R'});
+  });
+  return out;
+}
+function fimDeJogo(g,eq){
+  if(g.score[eq]>=PONTOS_ALVO){g.over=true;g.msg+=' Dupla '+eq+' venceu o jogo!';}
+}
+function aplicar(g0,seat,i,side){
+  var g=copia(g0);
+  var n=g.hands[seat].splice(i,1)[0],a=L(n),b=R(n);
+  if(!g.board.length)g.board.push(n);
+  else if(side==='L'){var l=L(g.board[0]);g.board.unshift(b===l?mk(a,b):mk(b,a));}
+  else{var r=R(g.board[g.board.length-1]);g.board.push(a===r?mk(a,b):mk(b,a));}
+  g.passes=0;
+  g.last={seat:seat,pass:false,n:n,side:g.board.length===1?'R':side};
+  if(!g.hands[seat].length){
+    var dbl=a===b,pts=dbl?2:1,eq=seat%2===0?'A':'B';
+    g.score[eq]+=pts;g.roundOver=true;
+    g.msg=nm(seat)+' bateu! Dupla '+eq+' faz '+pts+' ponto'+(pts>1?'s':'')+(dbl?' (carroça)':'')+'.';
+    fimDeJogo(g,eq);
+  }else g.turn=(seat+1)%4;
+  return g;
+}
+function passar(g0,seat){
+  var g=copia(g0);
+  g.passes++;
+  g.last={seat:seat,pass:true};
+  if(g.passes>=4){
+    var soma=[0,1,2,3].map(function(k){return g.hands[k].reduce(function(x,n){return x+L(n)+R(n);},0);});
+    var min=Math.min.apply(null,soma),eqs={};
+    [0,1,2,3].forEach(function(k){if(soma[k]===min)eqs[k%2===0?'A':'B']=1;});
+    var chaves=Object.keys(eqs);
+    g.roundOver=true;
+    if(chaves.length===1){g.score[chaves[0]]+=1;g.msg='Jogo trancado! Dupla '+chaves[0]+' tem menos pontos e faz 1 ponto.';fimDeJogo(g,chaves[0]);}
+    else g.msg='Jogo trancado e empatado: ninguém pontua.';
+  }else g.turn=(seat+1)%4;
+  return g;
+}
+async function gravar(g){
+  try{await st.db.doc('rooms/'+st.code+'/game/state').set(g);}catch(e){msg(erro(e),true);}
+}
+function escolher(i){
+  var g=st.game,eu=meuAssento();
+  if(!g||g.roundOver||eu===null||g.turn!==eu)return;
+  var o=jogadas(g,eu).filter(function(x){return x.i===i;});
+  if(!o.length)return msg('Essa peça não encaixa.',true);
+  msg('');
+  if(o.length===1)return gravar(aplicar(g,eu,i,o[0].side));
+  st.escolha=i;renderJogo();
+}
+function renderJogo(){
+  var g=st.game,box=$('vJogo');
+  if(!g||!st.code){box.hidden=true;return;}
+  box.hidden=false;
+  var eu=meuAssento();
+  $('jRodada').textContent='Rodada '+g.round+' · até '+PONTOS_ALVO+' pontos';
+  $('jPlacar').textContent='Dupla A '+g.score.A+' x '+g.score.B+' Dupla B';
+  $('jVez').textContent=g.roundOver?g.msg:(g.turn===eu?'É a sua vez!':'Vez de '+nm(g.turn));
+  var ul=g.last;
+  $('jUlt').textContent=ul?('Última jogada: '+nm(ul.seat)+(ul.pass?' passou.':' jogou '+L(ul.n)+'-'+R(ul.n)+'.')):'';
+  var opp=$('jOpp');opp.textContent='';
+  var base=eu===null?0:eu;
+  [1,2,3].forEach(function(d){
+    var sx=(base+d)%4,col=document.createElement('div');col.className='opp';
+    var bk=document.createElement('div');bk.className='backs';
+    for(var k=0;k<g.hands[sx].length;k++){var bc=document.createElement('div');bc.className='back';bk.appendChild(bc);}
+    var pl=document.createElement('div');pl.className='pill'+(g.turn===sx&&!g.roundOver?' vez':'');
+    pl.textContent=nm(sx)+' · '+g.hands[sx].length;
+    var tg=document.createElement('div');tg.className='lbl';
+    tg.textContent=(sx%2===base%2)?'Parceiro':'Adversário';
+    col.appendChild(bk);col.appendChild(pl);col.appendChild(tg);opp.appendChild(col);
+  });
+  var mesa=$('jMesa');mesa.textContent='';
+  if(!g.board.length){
+    var p=document.createElement('span');p.style.color='#d9efe3';
+    p.textContent=g.turn===eu?'Comece com a peça '+L(g.starterTile)+'-'+R(g.starterTile)+'.':'Aguardando a primeira peça...';
+    mesa.appendChild(p);
+  }
+  var un=0;g.board.forEach(function(n){un+=(L(n)===R(n))?1:2;});
+  var larg=mesa.clientWidth||300,u=un?Math.floor((larg-2*g.board.length)/un):30;
+  u=Math.max(14,Math.min(30,u));
+  mesa.style.setProperty('--u',u+'px');
+  var ult=(g.last&&!g.last.pass)?(g.last.side==='L'?0:g.board.length-1):-1;
+  g.board.forEach(function(n,ix){
+    var te=tile(L(n),R(n),L(n)===R(n));
+    if(ix===ult){te.style.outline='3px solid #ffd24a';te.style.outlineOffset='1px';}
+    mesa.appendChild(te);
+  });
+  var mao=$('jMao'),lados=$('jLados');mao.textContent='';lados.textContent='';lados.hidden=true;
+  var minhaVez=eu!==null&&g.turn===eu&&!g.roundOver;
+  var ops=minhaVez?jogadas(g,eu):[];
+  if(eu!==null){
+    g.hands[eu].forEach(function(n,i){
+      var b=document.createElement('button');b.type='button';
+      var joga=ops.some(function(o){return o.i===i;});
+      b.className='peca'+(minhaVez?(joga?' ok':' off'):'');
+      b.appendChild(tile(L(n),R(n),true));
+      b.addEventListener('click',function(){escolher(i);});
+      mao.appendChild(b);
+    });
+  }
+  var jeu=$('jEu');jeu.textContent='';
+  if(eu!==null){
+    var pe=document.createElement('div');pe.className='pill'+(minhaVez?' vez':'');
+    pe.textContent=nm(eu)+' · '+g.hands[eu].length;jeu.appendChild(pe);
+  }
+  if(st.escolha!==null&&minhaVez&&g.board.length){
+    lados.hidden=false;
+    [['L','Esquerda ('+L(g.board[0])+')'],['R','Direita ('+R(g.board[g.board.length-1])+')']].forEach(function(o){
+      var b=document.createElement('button');b.type='button';b.className='btn';b.textContent=o[1];
+      b.addEventListener('click',function(){var i=st.escolha;st.escolha=null;gravar(aplicar(g,eu,i,o[0]));});
+      lados.appendChild(b);
+    });
+  }
+  $('bPassar').hidden=!(minhaVez&&!ops.length);
+  $('bNova').hidden=!(g.roundOver&&souHostAgora());
+  $('bNova').textContent=g.over?'Novo jogo':'Nova rodada';
+  $('velWrap').hidden=!souHostAgora();
+}
+function velocidade(){var v=parseInt($('velBot').value,10);return v>0?v:2500;}
+function marca(g){return [g.round,g.board.length,g.passes,g.turn].join();}
+function agendarBot(){
+  clearTimeout(st.bt);
+  var g=st.game;
+  if(!g||g.roundOver||!souHostAgora()||!st.bots[g.turn])return;
+  var turno=g.turn,m0=marca(g);
+  st.bt=setTimeout(function(){
+    var cur=st.game;
+    if(!cur||cur.roundOver||marca(cur)!==m0)return;
+    var o=jogadas(cur,turno),novo;
+    if(!o.length)novo=passar(cur,turno);
+    else{
+      o.sort(function(x,y){var a=cur.hands[turno][x.i],b=cur.hands[turno][y.i];return (L(b)+R(b))-(L(a)+R(a));});
+      novo=aplicar(cur,turno,o[0].i,o[0].side);
+    }
+    gravar(novo);
+  },velocidade());
+}
+window.addEventListener('resize',function(){renderJogo();});
+try{var vs=localStorage.getItem('domino_vel');if(vs)$('velBot').value=vs;}catch(e){}
+$('velBot').addEventListener('change',function(){try{localStorage.setItem('domino_vel',this.value);}catch(e){}});
+$('bPassar').addEventListener('click',function(){var eu=meuAssento();if(st.game&&eu!==null)gravar(passar(st.game,eu));});
+$('bNova').addEventListener('click',function(){
+  var g=st.game;if(!g||!souHostAgora())return;
+  gravar(novaRodada(g.over?{A:0,B:0}:g.score,g.over?1:g.round+1));
+});
+var NOMES_BOT=['Ana','Beto','Cris','Duda'];
+function souHostAgora(){return !!(st.room&&st.room.hostId===st.uid);}
+async function addBot(){
+  if(!st.code||!souHostAgora())return;
+  var i=[0,1,2,3].filter(function(k){return !st.seats[k];})[0];
+  if(i===undefined)return msg('A mesa já está cheia.',true);
+  try{
+    await st.db.doc('rooms/'+st.code+'/seats/'+i).set({uid:'bot-'+i,bot:true,name:NOMES_BOT[i]+' (bot)',at:Date.now()});
+    msg('');
+  }catch(e){msg(erro(e),true);}
+}
+async function completarBots(){
+  if(!st.code||!souHostAgora())return;
+  var livres=[0,1,2,3].filter(function(k){return !st.seats[k];});
+  try{
+    for(var j=0;j<livres.length;j++){
+      var i=livres[j];
+      await st.db.doc('rooms/'+st.code+'/seats/'+i).set({uid:'bot-'+i,bot:true,name:NOMES_BOT[i]+' (bot)',at:Date.now()});
+    }
+    msg('');
+  }catch(e){msg(erro(e),true);}
+}
+async function removerBot(i){
+  if(!st.code||!souHostAgora()||!st.bots[i])return;
+  try{await st.db.doc('rooms/'+st.code+'/seats/'+i).delete();}catch(e){msg(erro(e),true);}
+}
+$('bBot').addEventListener('click',addBot);
+$('bBots').addEventListener('click',completarBots);
+function nome(){return ($('nome').value||'').replace(/\s+/g,' ').trim().slice(0,16);}
+function pedirNome(){msg('Digite seu nome antes de jogar.',true);$('nome').focus();}
+function guardarNome(){try{localStorage.setItem('domino_nome',nome());}catch(e){}}
+async function salvarNome(){
+  var n=nome();
+  if(!n)return pedirNome();
+  guardarNome();
+  var i=meuAssento();
+  if(i===null||!st.code)return;
+  try{await st.db.doc('rooms/'+st.code+'/seats/'+i).update({name:n});msg('Nome atualizado.');}
+  catch(e){msg(erro(e),true);}
+}
+$('bNome').addEventListener('click',salvarNome);
+$('nome').addEventListener('keydown',function(e){if(e.key==='Enter'){if(st.code)salvarNome();else guardarNome();}});
+$('nome').addEventListener('change',guardarNome);
+try{var salvo=localStorage.getItem('domino_nome');if(salvo)$('nome').value=salvo;}catch(e){}
+$('bCriar').addEventListener('click',criarSala);
+$('bEntrar').addEventListener('click',function(){entrarSala($('codigo').value);});
+$('codigo').addEventListener('keydown',function(e){if(e.key==='Enter')entrarSala(this.value);});
+$('bSair').addEventListener('click',sair);
+$('bIniciar').addEventListener('click',iniciar);
+$('bCopiar').addEventListener('click',copiar);
+
+(async function init(){
+  var m=/sala=([A-Za-z0-9]{5})/i.exec(location.hash||'');
+  if(m)$('codigo').value=m[1].toUpperCase();
+  try{
+    if(window.claude&&window.claude.use){
+      st.db=await window.claude.use('db');
+      st.user=await window.claude.use('user');
+      if(st.user)st.uid=await st.user.id();
+    }
+  }catch(e){}
+  if(!st.db||!st.uid)msg('Conecte-se à sua conta na versão publicada para criar ou entrar em salas.');
+})();
+})();
+</script>
+</body>
+</html>
